@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">KDO</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_exit">Quitter</string>
     <string name="profil_label">Votre profil</string>
     <string name="nom">Lamoureux</string>
     <string name="prenom">Clément</string>

@@ -994,10 +994,10 @@ containing a value of this type.
         public static final int action_bar_subtitle=0x7f050023;
         public static final int action_bar_title=0x7f050022;
         public static final int action_context_bar=0x7f05001d;
+        public static final int action_exit=0x7f05004f;
         public static final int action_menu_divider=0x7f050016;
         public static final int action_menu_presenter=0x7f050017;
         public static final int action_mode_close_button=0x7f050024;
-        public static final int action_settings=0x7f05004f;
         public static final int activity_chooser_view_content=0x7f050025;
         public static final int add_kdo=0x7f050046;
         public static final int age_label=0x7f050041;
@@ -1163,7 +1163,7 @@ containing a value of this type.
         /**  Description of a share target (both in the list of such or the default share button) in a ShareActionProvider (share UI). [CHAR LIMIT=NONE] 
          */
         public static final int abc_shareactionprovider_share_with_application=0x7f0a000b;
-        public static final int action_settings=0x7f0a000e;
+        public static final int action_exit=0x7f0a000e;
         public static final int age=0x7f0a0012;
         public static final int album_name=0x7f0a001b;
         public static final int app_name=0x7f0a000d;
