@@ -6,7 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,6 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -26,7 +26,7 @@ import android.widget.ImageView;
 import android.widget.VideoView;
 
 
-public class PhotoActivity extends Activity {
+public class PhotoActivity extends ActionBarActivity {
 
 	private static final int ACTION_TAKE_PHOTO_B = 1;
 	private static final int ACTION_TAKE_PHOTO_S = 2;
@@ -260,6 +260,9 @@ public class PhotoActivity extends Activity {
 		} else {
 			mAlbumStorageDirFactory = new BaseAlbumDirFactory();
 		}
+		
+
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override

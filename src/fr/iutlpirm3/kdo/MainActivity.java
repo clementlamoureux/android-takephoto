@@ -1,14 +1,14 @@
 package fr.iutlpirm3.kdo;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 
-public class MainActivity extends Activity {
+public class MainActivity extends ActionBarActivity {
 
 	private ExpandableListView maliste;
 	private ImageButton bouton_photo;
@@ -24,9 +24,6 @@ public class MainActivity extends Activity {
                 startActivityForResult(myIntent, 0);
 	        }
 	    });
-		
-
-		maliste = (ExpandableListView) findViewById(R.id.expandableListView1);
 
 
 
