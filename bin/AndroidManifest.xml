@@ -5,13 +5,12 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="8"
+        android:minSdkVersion="10"
         android:targetSdkVersion="18" />
 
  	<uses-feature android:name="android.hardware.camera"
                   android:required="true" />
  	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:required="true"/>
- 	
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -35,7 +34,16 @@
         <!-- Parent activity meta-data to support 4.0 and lower -->
         <meta-data
             android:name="android.support.PARENT_ACTIVITY"
-            android:value="cfr.iutlpirm3.kdo.MainActivity" />
+            android:value="fr.iutlpirm3.kdo.MainActivity" />
+        </activity>
+        <activity
+            android:name="fr.iutlpirm3.kdo.DetailsKdoActivity"
+            android:label="@string/title_activity_details"
+            android:parentActivityName="fr.iutlpirm3.kdo.MainActivity" >
+        <!-- Parent activity meta-data to support 4.0 and lower -->
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value="fr.iutlpirm3.kdo.MainActivity" />
         </activity>
     
     </application>

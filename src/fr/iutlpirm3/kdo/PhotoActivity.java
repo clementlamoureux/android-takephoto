@@ -6,8 +6,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -22,33 +28,26 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.VideoView;
 
 
 public class PhotoActivity extends ActionBarActivity {
 
 	private static final int ACTION_TAKE_PHOTO_B = 1;
-	private static final int ACTION_TAKE_PHOTO_S = 2;
-	private static final int ACTION_TAKE_VIDEO = 3;
 
 	private static final String BITMAP_STORAGE_KEY = "viewbitmap";
 	private static final String IMAGEVIEW_VISIBILITY_STORAGE_KEY = "imageviewvisibility";
 	private ImageView mImageView;
 	private Bitmap mImageBitmap;
-
-	private static final String VIDEO_STORAGE_KEY = "viewvideo";
-	private static final String VIDEOVIEW_VISIBILITY_STORAGE_KEY = "videoviewvisibility";
-	private VideoView mVideoView;
-	private Uri mVideoUri;
-
 	private String mCurrentPhotoPath;
 
 	private static final String JPEG_FILE_PREFIX = "IMG_";
 	private static final String JPEG_FILE_SUFFIX = ".jpg";
 
 	private AlbumStorageDirFactory mAlbumStorageDirFactory = null;
+	private String mCurrentPhotoPath2;
 
 	
 	/* Photo album for this application */
@@ -80,6 +79,7 @@ public class PhotoActivity extends ActionBarActivity {
 		return storageDir;
 	}
 
+	@SuppressLint("SimpleDateFormat")
 	private File createImageFile() throws IOException {
 		// Create an image file name
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -109,10 +109,10 @@ public class PhotoActivity extends ActionBarActivity {
 		/* Get the size of the image */
 		BitmapFactory.Options bmOptions = new BitmapFactory.Options();
 		bmOptions.inJustDecodeBounds = true;
-		BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+		BitmapFactory.decodeFile(mCurrentPhotoPath2, bmOptions);
 		int photoW = bmOptions.outWidth;
 		int photoH = bmOptions.outHeight;
-		
+
 		/* Figure out which way needs to be reduced less */
 		int scaleFactor = 1;
 		if ((targetW > 0) || (targetH > 0)) {
@@ -125,13 +125,11 @@ public class PhotoActivity extends ActionBarActivity {
 		bmOptions.inPurgeable = true;
 
 		/* Decode the JPEG file into a Bitmap */
-		Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+		Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath2, bmOptions);
 		
 		/* Associate the Bitmap to the ImageView */
 		mImageView.setImageBitmap(bitmap);
-		mVideoUri = null;
 		mImageView.setVisibility(View.VISIBLE);
-		mVideoView.setVisibility(View.INVISIBLE);
 	}
 
 	private void galleryAddPic() {
@@ -153,6 +151,7 @@ public class PhotoActivity extends ActionBarActivity {
 			try {
 				f = setUpPhotoFile();
 				mCurrentPhotoPath = f.getAbsolutePath();
+				mCurrentPhotoPath2 = f.getAbsolutePath();
 				takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -168,20 +167,6 @@ public class PhotoActivity extends ActionBarActivity {
 		startActivityForResult(takePictureIntent, actionCode);
 	}
 
-	private void dispatchTakeVideoIntent() {
-		Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-		startActivityForResult(takeVideoIntent, ACTION_TAKE_VIDEO);
-	}
-
-	private void handleSmallCameraPhoto(Intent intent) {
-		Bundle extras = intent.getExtras();
-		mImageBitmap = (Bitmap) extras.get("data");
-		mImageView.setImageBitmap(mImageBitmap);
-		mVideoUri = null;
-		mImageView.setVisibility(View.VISIBLE);
-		mVideoView.setVisibility(View.INVISIBLE);
-	}
-
 	private void handleBigCameraPhoto() {
 
 		if (mCurrentPhotoPath != null) {
@@ -192,14 +177,6 @@ public class PhotoActivity extends ActionBarActivity {
 
 	}
 
-	private void handleCameraVideo(Intent intent) {
-		mVideoUri = intent.getData();
-		mVideoView.setVideoURI(mVideoUri);
-		mImageBitmap = null;
-		mVideoView.setVisibility(View.VISIBLE);
-		mImageView.setVisibility(View.INVISIBLE);
-	}
-
 	Button.OnClickListener mTakePicOnClickListener = 
 		new Button.OnClickListener() {
 		@Override
@@ -208,21 +185,6 @@ public class PhotoActivity extends ActionBarActivity {
 		}
 	};
 
-	Button.OnClickListener mTakePicSOnClickListener = 
-		new Button.OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			dispatchTakePictureIntent(ACTION_TAKE_PHOTO_S);
-		}
-	};
-
-	Button.OnClickListener mTakeVidOnClickListener = 
-		new Button.OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			dispatchTakeVideoIntent();
-		}
-	};
 
 	/** Called when the activity is first created. */
 	@Override
@@ -230,10 +192,8 @@ public class PhotoActivity extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_photo);
 
-		mImageView = (ImageView) findViewById(R.id.imageView1);
-		mVideoView = (VideoView) findViewById(R.id.videoView1);
+		mImageView = (ImageView) findViewById(R.id.mImageView);
 		mImageBitmap = null;
-		mVideoUri = null;
 
 		ImageButton picBtn = (ImageButton) findViewById(R.id.btnPhoto);
 		setBtnListenerOrDisable( 
@@ -242,19 +202,7 @@ public class PhotoActivity extends ActionBarActivity {
 				MediaStore.ACTION_IMAGE_CAPTURE
 		);
 
-//		Button picSBtn = (Button) findViewById(R.id.btnIntendS);
-//		setBtnListenerOrDisable( 
-//				picSBtn, 
-//				mTakePicSOnClickListener,
-//				MediaStore.ACTION_IMAGE_CAPTURE
-//		);
-//
-//		Button vidBtn = (Button) findViewById(R.id.btnIntendV);
-//		setBtnListenerOrDisable( 
-//				vidBtn, 
-//				mTakeVidOnClickListener,
-//				MediaStore.ACTION_VIDEO_CAPTURE
-//		);
+
 		
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
 			mAlbumStorageDirFactory = new FroyoAlbumDirFactory();
@@ -264,41 +212,90 @@ public class PhotoActivity extends ActionBarActivity {
 		
 
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		
+		// ACTION sur l'ajout d'un kdo
+		
+		final Button button = (Button) findViewById(R.id.add_kdo_submit);
+	    button.setOnClickListener(new View.OnClickListener() {
+	        public void onClick(View v) {
+	    		// fetch list_kdo object
+	    		SharedPreferences sharedPref = getSharedPreferences("json_data", 0);
+	    		String temp_sp = sharedPref.getString("liste_kdo", null);
+	    		JSONObject temp;
+	    		if(temp_sp!=null){
+	    			try {
+						temp = new JSONObject(temp_sp);
+						JSONArray list_kdo_array = temp.getJSONArray("liste");
+						JSONObject new_kdo=new JSONObject();
+						EditText editText1 = (EditText) findViewById(R.id.editText1);
+						new_kdo.put("nom", editText1.getText());
+						EditText editText2 = (EditText) findViewById(R.id.EditText01);
+						new_kdo.put("prix", editText2.getText());
+						EditText editText3 = (EditText) findViewById(R.id.EditText02);
+						new_kdo.put("lieu", editText3.getText());
+						new_kdo.put("image", mCurrentPhotoPath2);
+						list_kdo_array.put(new_kdo);
+						JSONObject tempp = new JSONObject();
+						tempp.put("liste", list_kdo_array);
+
+						// mets l'object json dans les sharedpref en format String
+						SharedPreferences json_infos_users = getSharedPreferences(
+								"json_data", 0);
+						SharedPreferences.Editor editor = json_infos_users.edit();
+						editor.putString("liste_kdo", tempp.toString());
+						editor.commit();
+						finish();
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	        }
+	    		else
+	    		{
+					JSONArray list_kdo_array =new JSONArray();
+					JSONObject new_kdo=new JSONObject();
+					EditText editText1 = (EditText) findViewById(R.id.editText1);
+					try {
+						new_kdo.put("nom", editText1.getText());
+						EditText editText2 = (EditText) findViewById(R.id.EditText01);
+						new_kdo.put("prix", editText2.getText());
+						EditText editText3 = (EditText) findViewById(R.id.EditText02);
+						new_kdo.put("lieu", editText3.getText());
+						new_kdo.put("image", mCurrentPhotoPath2);
+						list_kdo_array.put(new_kdo);
+						JSONObject tempp = new JSONObject();
+						tempp.put("liste", list_kdo_array);
+
+						// mets l'object json dans les sharedpref en format String
+						SharedPreferences json_infos_users = getSharedPreferences(
+								"json_data", 0);
+						SharedPreferences.Editor editor = json_infos_users.edit();
+						editor.putString("liste_kdo", tempp.toString());
+						editor.commit();
+						finish();
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+	    			
+	    		}
+	        }
+	    });
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		switch (requestCode) {
-		case ACTION_TAKE_PHOTO_B: {
 			if (resultCode == RESULT_OK) {
 				handleBigCameraPhoto();
 			}
-			break;
-		} // ACTION_TAKE_PHOTO_B
-
-		case ACTION_TAKE_PHOTO_S: {
-			if (resultCode == RESULT_OK) {
-				handleSmallCameraPhoto(data);
-			}
-			break;
-		} // ACTION_TAKE_PHOTO_S
-
-		case ACTION_TAKE_VIDEO: {
-			if (resultCode == RESULT_OK) {
-				handleCameraVideo(data);
-			}
-			break;
-		} // ACTION_TAKE_VIDEO
-		} // switch
 	}
 
 	// Some lifecycle callbacks so that the image can survive orientation change
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable(BITMAP_STORAGE_KEY, mImageBitmap);
-		outState.putParcelable(VIDEO_STORAGE_KEY, mVideoUri);
 		outState.putBoolean(IMAGEVIEW_VISIBILITY_STORAGE_KEY, (mImageBitmap != null) );
-		outState.putBoolean(VIDEOVIEW_VISIBILITY_STORAGE_KEY, (mVideoUri != null) );
 		super.onSaveInstanceState(outState);
 	}
 
@@ -306,15 +303,9 @@ public class PhotoActivity extends ActionBarActivity {
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
 		mImageBitmap = savedInstanceState.getParcelable(BITMAP_STORAGE_KEY);
-		mVideoUri = savedInstanceState.getParcelable(VIDEO_STORAGE_KEY);
 		mImageView.setImageBitmap(mImageBitmap);
 		mImageView.setVisibility(
 				savedInstanceState.getBoolean(IMAGEVIEW_VISIBILITY_STORAGE_KEY) ? 
-						ImageView.VISIBLE : ImageView.INVISIBLE
-		);
-		mVideoView.setVideoURI(mVideoUri);
-		mVideoView.setVisibility(
-				savedInstanceState.getBoolean(VIDEOVIEW_VISIBILITY_STORAGE_KEY) ? 
 						ImageView.VISIBLE : ImageView.INVISIBLE
 		);
 	}
@@ -355,6 +346,9 @@ public class PhotoActivity extends ActionBarActivity {
 		}
 	}
 	
+	
+
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    // Handle item selection
@@ -366,6 +360,9 @@ public class PhotoActivity extends ActionBarActivity {
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
+	
+
+
 	
 
 }

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">KDO</string>
+    <string name="app_name">LPIRM3 Application KDO</string>
     <string name="action_exit">Quitter</string>
+    <string name="action_debug_reset">Debug|Reset liste de souhait</string>
     <string name="profil_label">Votre profil</string>
+    <string name="listesouhait_label">Votre liste de souhait</string>
     <string name="nom">Lamoureux</string>
     <string name="prenom">Clément</string>
     <string name="age">20 ans</string>
@@ -16,5 +18,7 @@
     <string name="btnPhoto">Prendre une photo</string>
     <string name="cannot">Cannot</string>
     <string name="album_name">CameraSample</string>
+    <string name="details_kdo_title">Détails du cadeau</string>
+    <string name="title_activity_details">Détails</string>
 
 </resources>
