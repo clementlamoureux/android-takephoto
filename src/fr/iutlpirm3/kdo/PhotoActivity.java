@@ -31,8 +31,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Toast;
-
 
 public class PhotoActivity extends ActionBarActivity {
 
@@ -50,51 +48,54 @@ public class PhotoActivity extends ActionBarActivity {
 	private AlbumStorageDirFactory mAlbumStorageDirFactory = null;
 	private String mCurrentPhotoPath2;
 
-	
 	/* Photo album for this application */
 	private String getAlbumName() {
 		return getString(R.string.album_name);
 	}
 
-	
 	private File getAlbumDir() {
 		File storageDir = null;
 
-		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-			
-			storageDir = mAlbumStorageDirFactory.getAlbumStorageDir(getAlbumName());
+		if (Environment.MEDIA_MOUNTED.equals(Environment
+				.getExternalStorageState())) {
+
+			storageDir = mAlbumStorageDirFactory
+					.getAlbumStorageDir(getAlbumName());
 
 			if (storageDir != null) {
-				if (! storageDir.mkdirs()) {
-					if (! storageDir.exists()){
+				if (!storageDir.mkdirs()) {
+					if (!storageDir.exists()) {
 						Log.d("CameraSample", "failed to create directory");
 						return null;
 					}
 				}
 			}
-			
+
 		} else {
-			Log.v(getString(R.string.app_name), "External storage is not mounted READ/WRITE.");
+			Log.v(getString(R.string.app_name),
+					"External storage is not mounted READ/WRITE.");
 		}
-		
+
 		return storageDir;
 	}
 
 	@SuppressLint("SimpleDateFormat")
 	private File createImageFile() throws IOException {
 		// Create an image file name
-		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+				.format(new Date());
 		String imageFileName = JPEG_FILE_PREFIX + timeStamp + "_";
 		File albumF = getAlbumDir();
-		File imageF = File.createTempFile(imageFileName, JPEG_FILE_SUFFIX, albumF);
+		File imageF = File.createTempFile(imageFileName, JPEG_FILE_SUFFIX,
+				albumF);
 		return imageF;
 	}
 
 	private File setUpPhotoFile() throws IOException {
-		
+
 		File f = createImageFile();
 		mCurrentPhotoPath = f.getAbsolutePath();
-		
+
 		return f;
 	}
 
@@ -117,7 +118,7 @@ public class PhotoActivity extends ActionBarActivity {
 		/* Figure out which way needs to be reduced less */
 		int scaleFactor = 1;
 		if ((targetW > 0) || (targetH > 0)) {
-			scaleFactor = Math.min(photoW/targetW, photoH/targetH);	
+			scaleFactor = Math.min(photoW / targetW, photoH / targetH);
 		}
 
 		/* Set bitmap options to scale the image decode target */
@@ -127,33 +128,35 @@ public class PhotoActivity extends ActionBarActivity {
 
 		/* Decode the JPEG file into a Bitmap */
 		Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath2, bmOptions);
-		
+
 		/* Associate the Bitmap to the ImageView */
 		mImageView.setImageBitmap(bitmap);
 		mImageView.setVisibility(View.VISIBLE);
 	}
 
 	private void galleryAddPic() {
-		    Intent mediaScanIntent = new Intent("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
-			File f = new File(mCurrentPhotoPath);
-		    Uri contentUri = Uri.fromFile(f);
-		    mediaScanIntent.setData(contentUri);
-		    this.sendBroadcast(mediaScanIntent);
+		Intent mediaScanIntent = new Intent(
+				"android.intent.action.MEDIA_SCANNER_SCAN_FILE");
+		File f = new File(mCurrentPhotoPath);
+		Uri contentUri = Uri.fromFile(f);
+		mediaScanIntent.setData(contentUri);
+		this.sendBroadcast(mediaScanIntent);
 	}
 
 	private void dispatchTakePictureIntent(int actionCode) {
 
 		Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-		switch(actionCode) {
+		switch (actionCode) {
 		case ACTION_TAKE_PHOTO_B:
 			File f = null;
-			
+
 			try {
 				f = setUpPhotoFile();
 				mCurrentPhotoPath = f.getAbsolutePath();
 				mCurrentPhotoPath2 = f.getAbsolutePath();
-				takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
+				takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+						Uri.fromFile(f));
 			} catch (IOException e) {
 				e.printStackTrace();
 				f = null;
@@ -162,7 +165,7 @@ public class PhotoActivity extends ActionBarActivity {
 			break;
 
 		default:
-			break;			
+			break;
 		} // switch
 
 		startActivityForResult(takePictureIntent, actionCode);
@@ -178,14 +181,12 @@ public class PhotoActivity extends ActionBarActivity {
 
 	}
 
-	Button.OnClickListener mTakePicOnClickListener = 
-		new Button.OnClickListener() {
+	Button.OnClickListener mTakePicOnClickListener = new Button.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			dispatchTakePictureIntent(ACTION_TAKE_PHOTO_B);
 		}
 	};
-
 
 	/** Called when the activity is first created. */
 	@Override
@@ -197,37 +198,33 @@ public class PhotoActivity extends ActionBarActivity {
 		mImageBitmap = null;
 
 		ImageButton picBtn = (ImageButton) findViewById(R.id.btnPhoto);
-		setBtnListenerOrDisable( 
-				picBtn, 
-				mTakePicOnClickListener,
-				MediaStore.ACTION_IMAGE_CAPTURE
-		);
+		setBtnListenerOrDisable(picBtn, mTakePicOnClickListener,
+				MediaStore.ACTION_IMAGE_CAPTURE);
 
-
-		
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
 			mAlbumStorageDirFactory = new FroyoAlbumDirFactory();
 		} else {
 			mAlbumStorageDirFactory = new BaseAlbumDirFactory();
 		}
-		
 
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		
+
 		// ACTION sur l'ajout d'un kdo
-		
+
 		final Button button = (Button) findViewById(R.id.add_kdo_submit);
-	    button.setOnClickListener(new View.OnClickListener() {
-	        public void onClick(View v) {
-	    		// fetch list_kdo object
-	    		SharedPreferences sharedPref = getSharedPreferences("json_data", 0);
-	    		String temp_sp = sharedPref.getString("liste_kdo", null);
-	    		JSONArray temp;
-	    		if(temp_sp!=null){
-	    			try {
+		button.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				// fetch list_kdo object
+				SharedPreferences sharedPref = getSharedPreferences(
+						"json_data", 0);
+				String temp_sp = sharedPref.getString("liste_kdo", null);
+				JSONArray temp;
+				if (temp_sp != null) {
+					try {
 						temp = new JSONArray(temp_sp);
-						//JSONArray list_kdo_array = temp.getJSONArray("liste");
-						JSONObject new_kdo=new JSONObject();
+						// JSONArray list_kdo_array =
+						// temp.getJSONArray("liste");
+						JSONObject new_kdo = new JSONObject();
 						EditText editText1 = (EditText) findViewById(R.id.editText1);
 						new_kdo.put("Nom", editText1.getText());
 						EditText editText2 = (EditText) findViewById(R.id.EditText01);
@@ -236,12 +233,13 @@ public class PhotoActivity extends ActionBarActivity {
 						new_kdo.put("LienLieuAchat", editText3.getText());
 						new_kdo.put("Image", mCurrentPhotoPath2);
 						temp.put(new_kdo);
-						
 
-						// mets l'object json dans les sharedpref en format String
+						// mets l'object json dans les sharedpref en format
+						// String
 						SharedPreferences json_infos_users = getSharedPreferences(
 								"json_data", 0);
-						SharedPreferences.Editor editor = json_infos_users.edit();
+						SharedPreferences.Editor editor = json_infos_users
+								.edit();
 						editor.putString("liste_kdo", temp.toString());
 						editor.commit();
 						finish();
@@ -249,11 +247,9 @@ public class PhotoActivity extends ActionBarActivity {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-	        }
-	    		else
-	    		{
-					JSONArray list_kdo_array =new JSONArray();
-					JSONObject new_kdo=new JSONObject();
+				} else {
+					JSONArray list_kdo_array = new JSONArray();
+					JSONObject new_kdo = new JSONObject();
 					EditText editText1 = (EditText) findViewById(R.id.editText1);
 					try {
 						new_kdo.put("nom", editText1.getText());
@@ -266,10 +262,12 @@ public class PhotoActivity extends ActionBarActivity {
 						JSONObject tempp = new JSONObject();
 						tempp.put("liste", list_kdo_array);
 
-						// mets l'object json dans les sharedpref en format String
+						// mets l'object json dans les sharedpref en format
+						// String
 						SharedPreferences json_infos_users = getSharedPreferences(
 								"json_data", 0);
-						SharedPreferences.Editor editor = json_infos_users.edit();
+						SharedPreferences.Editor editor = json_infos_users
+								.edit();
 						editor.putString("liste_kdo", tempp.toString());
 						editor.commit();
 						finish();
@@ -277,25 +275,25 @@ public class PhotoActivity extends ActionBarActivity {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					
-	    			
-	    		}
-	        }
-	    });
+
+				}
+			}
+		});
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-			if (resultCode == RESULT_OK) {
-				handleBigCameraPhoto();
-			}
+		if (resultCode == RESULT_OK) {
+			handleBigCameraPhoto();
+		}
 	}
 
 	// Some lifecycle callbacks so that the image can survive orientation change
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable(BITMAP_STORAGE_KEY, mImageBitmap);
-		outState.putBoolean(IMAGEVIEW_VISIBILITY_STORAGE_KEY, (mImageBitmap != null) );
+		outState.putBoolean(IMAGEVIEW_VISIBILITY_STORAGE_KEY,
+				(mImageBitmap != null));
 		super.onSaveInstanceState(outState);
 	}
 
@@ -304,10 +302,10 @@ public class PhotoActivity extends ActionBarActivity {
 		super.onRestoreInstanceState(savedInstanceState);
 		mImageBitmap = savedInstanceState.getParcelable(BITMAP_STORAGE_KEY);
 		mImageView.setImageBitmap(mImageBitmap);
-		mImageView.setVisibility(
-				savedInstanceState.getBoolean(IMAGEVIEW_VISIBILITY_STORAGE_KEY) ? 
-						ImageView.VISIBLE : ImageView.INVISIBLE
-		);
+		mImageView
+				.setVisibility(savedInstanceState
+						.getBoolean(IMAGEVIEW_VISIBILITY_STORAGE_KEY) ? ImageView.VISIBLE
+						: ImageView.INVISIBLE);
 	}
 
 	/**
@@ -316,53 +314,44 @@ public class PhotoActivity extends ActionBarActivity {
 	 * respond to an intent with the specified action. If no suitable package is
 	 * found, this method returns false.
 	 * http://android-developers.blogspot.com/2009/01/can-i-use-this-intent.html
-	 *
-	 * @param context The application's environment.
-	 * @param action The Intent action to check for availability.
-	 *
+	 * 
+	 * @param context
+	 *            The application's environment.
+	 * @param action
+	 *            The Intent action to check for availability.
+	 * 
 	 * @return True if an Intent with the specified action can be sent and
 	 *         responded to, false otherwise.
 	 */
 	public static boolean isIntentAvailable(Context context, String action) {
 		final PackageManager packageManager = context.getPackageManager();
 		final Intent intent = new Intent(action);
-		List<ResolveInfo> list =
-			packageManager.queryIntentActivities(intent,
-					PackageManager.MATCH_DEFAULT_ONLY);
+		List<ResolveInfo> list = packageManager.queryIntentActivities(intent,
+				PackageManager.MATCH_DEFAULT_ONLY);
 		return list.size() > 0;
 	}
 
-	private void setBtnListenerOrDisable( 
-			ImageButton btn, 
-			Button.OnClickListener onClickListener,
-			String intentName
-	) {
+	private void setBtnListenerOrDisable(ImageButton btn,
+			Button.OnClickListener onClickListener, String intentName) {
 		if (isIntentAvailable(this, intentName)) {
-			btn.setOnClickListener(onClickListener);        	
+			btn.setOnClickListener(onClickListener);
 		} else {
-//			btn.setText( 
-//				getText(R.string.cannot).toString() + " " + btn.getText());
+			// btn.setText(
+			// getText(R.string.cannot).toString() + " " + btn.getText());
 			btn.setClickable(false);
 		}
 	}
-	
-	
 
-	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-	    // Handle item selection
-	    switch (item.getItemId()) {
-	        case R.id.action_exit:
-	        	moveTaskToBack(true);
-	            return true;
-	        default:
-	            return super.onOptionsItemSelected(item);
-	    }
+		// Handle item selection
+		switch (item.getItemId()) {
+		case R.id.action_exit:
+			moveTaskToBack(true);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
-	
-
-
-	
 
 }

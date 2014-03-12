@@ -12,9 +12,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-public class DetailsKdoActivity extends ActionBarActivity{
+public class DetailsKdoActivity extends ActionBarActivity {
 	private int i;
 	private String mCurrentPhotoPath;
 	private ImageView mImageView;
@@ -26,48 +25,47 @@ public class DetailsKdoActivity extends ActionBarActivity{
 		mImageView = (ImageView) findViewById(R.id.imageView1);
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
-		    i = extras.getInt("id_kdo");
-		    display_kdo();
+			i = extras.getInt("id_kdo");
+			display_kdo();
 		}
-		
-		
+
 	}
-	
-	public void display_kdo(){
+
+	public void display_kdo() {
 		SharedPreferences sharedPref = getSharedPreferences("json_data", 0);
 		String temp_sp = sharedPref.getString("liste_kdo", null);
 		JSONArray temp;
 		try {
 			temp = new JSONArray(temp_sp);
-			//JSONArray list_kdo_array = temp.getJSONArray("liste");
-		    JSONObject temp1 = temp.getJSONObject(i);
-		    TextView temp2 = (TextView) findViewById(R.id.dest_nom);
-		    TextView temp3 = (TextView) findViewById(R.id.dest_prix);
-		    TextView temp4 = (TextView) findViewById(R.id.dest_lieu);
-		    TextView temp5 = (TextView) findViewById(R.id.label_lieuachat);
-		    temp2.setText(temp1.getString("Nom"));
-		    temp3.setText(temp1.getString("Prix") + "€");
-		    if (temp1.getString("LienLieuAchat")!=null){
-			    temp4.setText(temp1.getString("LienLieuAchat"));
-			    temp5.setVisibility(View.VISIBLE);
-		    }
-		    mCurrentPhotoPath = temp1.getString("Image");
-		    setPic();
-		    
+			// JSONArray list_kdo_array = temp.getJSONArray("liste");
+			JSONObject temp1 = temp.getJSONObject(i);
+			TextView temp2 = (TextView) findViewById(R.id.dest_nom);
+			TextView temp3 = (TextView) findViewById(R.id.dest_prix);
+			TextView temp4 = (TextView) findViewById(R.id.dest_lieu);
+			TextView temp5 = (TextView) findViewById(R.id.label_lieuachat);
+			temp2.setText(temp1.getString("Nom"));
+			temp3.setText(temp1.getString("Prix") + "€");
+			if (temp1.getString("LienLieuAchat") != null) {
+				temp4.setText(temp1.getString("LienLieuAchat"));
+				temp5.setVisibility(View.VISIBLE);
+			}
+			mCurrentPhotoPath = temp1.getString("Image");
+			setPic();
+
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 	}
-	
+
 	private void setPic() {
 
 		/* There isn't enough memory to open up more than a couple camera photos */
 		/* So pre-scale the target bitmap into which the file is decoded */
 
 		/* Get the size of the ImageView */
-		int targetW = mImageView .getWidth();
+		int targetW = mImageView.getWidth();
 		int targetH = mImageView.getHeight();
 
 		/* Get the size of the image */
@@ -76,11 +74,11 @@ public class DetailsKdoActivity extends ActionBarActivity{
 		BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
 		int photoW = bmOptions.outWidth;
 		int photoH = bmOptions.outHeight;
-		
+
 		/* Figure out which way needs to be reduced less */
 		int scaleFactor = 1;
 		if ((targetW > 0) || (targetH > 0)) {
-			scaleFactor = Math.min(photoW/targetW, photoH/targetH);	
+			scaleFactor = Math.min(photoW / targetW, photoH / targetH);
 		}
 
 		/* Set bitmap options to scale the image decode target */
@@ -90,7 +88,7 @@ public class DetailsKdoActivity extends ActionBarActivity{
 
 		/* Decode the JPEG file into a Bitmap */
 		Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-		
+
 		/* Associate the Bitmap to the ImageView */
 		mImageView.setImageBitmap(bitmap);
 		mImageView.setVisibility(View.VISIBLE);
