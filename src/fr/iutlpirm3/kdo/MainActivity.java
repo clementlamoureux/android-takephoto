@@ -1,13 +1,25 @@
 package fr.iutlpirm3.kdo;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -20,6 +32,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -39,12 +52,36 @@ public class MainActivity extends ActionBarActivity {
 		});
 		
 		create_users_infos_JSONFICTIF();
+		//fetch_users_infos();
 		display_users_infos();
 
 		//create_kdo_JSONFICTIF();
 		display_kdo();
+		
+		
+
 	}
 
+	public void fetch_kdo(){
+
+		HttpTask temp = new HttpTask();
+		AsyncTask<String, Boolean, String> lol = temp.execute();
+		try {
+			Toast.makeText(getApplicationContext(), lol.get(), Toast.LENGTH_SHORT).show();
+			SharedPreferences json_infos_users = getSharedPreferences(
+					"json_data", 0);
+			SharedPreferences.Editor editor = json_infos_users.edit();
+			editor.putString("liste_kdo", lol.get());
+			editor.commit();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public void create_users_infos_JSONFICTIF() {
 		JSONObject infos_users = new JSONObject();
 		try {
@@ -144,17 +181,19 @@ public class MainActivity extends ActionBarActivity {
 	public void display_kdo(){
 		SharedPreferences sharedPref = getSharedPreferences("json_data", 0);
 		String temp_sp = sharedPref.getString("liste_kdo", null);
-		JSONObject temp = null;
+		JSONArray temp2 = null;
+		JSONObject temp = new JSONObject();
 		final ArrayList<String> values = new ArrayList<String>();
 		if(temp_sp!=null){
 			try {
-				temp = new JSONObject(temp_sp);
-				JSONArray list_kdo_array = temp.getJSONArray("liste");
+				temp2 = new JSONArray(temp_sp);
+				temp = temp2.getJSONObject(0);
+				JSONArray list_kdo_array = temp2;
 				int list_kdo_array_longueur = list_kdo_array.length();
 			   
 			    for (int i = 0; i < list_kdo_array_longueur; ++i) {
 			    	JSONObject temp1 = list_kdo_array.getJSONObject(i); 
-			    	values.add((i+1) + " : " + temp1.getString("nom") + " | " + temp1.getString("prix") + "€");
+			    	values.add((i+1) + " : " + temp1.getString("Nom") + " | " + temp1.getString("Prix") + "€");
 			    }
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
@@ -185,6 +224,8 @@ public class MainActivity extends ActionBarActivity {
 	    display_kdo();
 	}
 
+
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
@@ -193,12 +234,77 @@ public class MainActivity extends ActionBarActivity {
 			moveTaskToBack(true);
 			return true;
 		case R.id.action_debug_reset:
-			create_kdo_JSONFICTIF();
+
+			fetch_kdo();
 			display_kdo();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
+	
 
+	 public final class HttpTask
+	         extends
+	         AsyncTask<String/* Param */, Boolean /* Progress */, String /* Result */> {
+
+	     private HttpClient mHc = new DefaultHttpClient();
+
+	     @Override
+	     protected String doInBackground(String... params) {
+	         publishProgress(true);
+	         // Do the usual httpclient thing to get the result
+	         HttpClient client = new DefaultHttpClient();
+	         HttpGet request = new HttpGet("http://lpirm-projetkdo3.iut-larochelle.fr/Lpirm-ProjetKdo3/Projetkdo/public/cadeaux");
+	         try
+	         {
+	             HttpResponse response;
+				try {
+					response = client.execute(request);
+		            // What if I want to cancel now??
+		             HttpEntity entity = response.getEntity();
+		             InputStream inputStream = entity.getContent();
+		             BufferedInputStream bis = new BufferedInputStream(inputStream);
+		               ByteArrayBuffer baf = new ByteArrayBuffer(20);
+
+		                int current = 0; 
+		                while((current = bis.read()) != -1){ 
+		                    baf.append((byte)current); 
+		                } 
+		                
+		               /* Convert the Bytes read to a String. */
+		                String  text = new String(baf.toByteArray());
+		   	         return text;
+		         }
+		      catch (ClientProtocolException e) { 
+	             // TODO Auto-generated catch block
+		    	  return "error";
+	            
+	        }  
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+			    	  return "error";
+				}
+	             
+	     }
+	     
+
+	     @Override
+	     protected void onProgressUpdate(Boolean... progress) {
+	         // line below coupled with 
+	         //    getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS) 
+	         //    before setContentView 
+	         // will show the wait animation on the top-right corner
+	         MainActivity.this.setProgressBarIndeterminateVisibility(progress[0]);
+	     }
+
+	     @Override
+	     protected void onPostExecute(String result) {
+	         publishProgress(false);
+	         // Do something with result in your activity
+	     }
+
+	 }	
 }
+
+

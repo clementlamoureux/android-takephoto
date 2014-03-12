@@ -17,7 +17,7 @@
     <string name="hello">Hello World, PhotoIntentActivity!</string>
     <string name="btnPhoto">Prendre une photo</string>
     <string name="cannot">Cannot</string>
-    <string name="album_name">CameraSample</string>
+    <string name="album_name">LPIRM Appli KDO</string>
     <string name="details_kdo_title">Détails du cadeau</string>
     <string name="title_activity_details">Détails</string>
 

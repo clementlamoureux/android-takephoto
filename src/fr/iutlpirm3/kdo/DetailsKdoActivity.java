@@ -12,6 +12,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class DetailsKdoActivity extends ActionBarActivity{
 	private int i;
@@ -35,22 +36,22 @@ public class DetailsKdoActivity extends ActionBarActivity{
 	public void display_kdo(){
 		SharedPreferences sharedPref = getSharedPreferences("json_data", 0);
 		String temp_sp = sharedPref.getString("liste_kdo", null);
-		JSONObject temp;
+		JSONArray temp;
 		try {
-			temp = new JSONObject(temp_sp);
-			JSONArray list_kdo_array = temp.getJSONArray("liste");
-		    JSONObject temp1 = list_kdo_array.getJSONObject(i);
+			temp = new JSONArray(temp_sp);
+			//JSONArray list_kdo_array = temp.getJSONArray("liste");
+		    JSONObject temp1 = temp.getJSONObject(i);
 		    TextView temp2 = (TextView) findViewById(R.id.dest_nom);
 		    TextView temp3 = (TextView) findViewById(R.id.dest_prix);
 		    TextView temp4 = (TextView) findViewById(R.id.dest_lieu);
 		    TextView temp5 = (TextView) findViewById(R.id.label_lieuachat);
-		    temp2.setText(temp1.getString("nom"));
-		    temp3.setText(temp1.getString("prix") + "€");
-		    if (temp1.getString("lieu")!=null){
-			    temp4.setText(temp1.getString("lieu"));
+		    temp2.setText(temp1.getString("Nom"));
+		    temp3.setText(temp1.getString("Prix") + "€");
+		    if (temp1.getString("LienLieuAchat")!=null){
+			    temp4.setText(temp1.getString("LienLieuAchat"));
 			    temp5.setVisibility(View.VISIBLE);
 		    }
-		    mCurrentPhotoPath = temp1.getString("image");
+		    mCurrentPhotoPath = temp1.getString("Image");
 		    setPic();
 		    
 		} catch (JSONException e) {

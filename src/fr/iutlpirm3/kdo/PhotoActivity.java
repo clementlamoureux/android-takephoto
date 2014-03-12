@@ -31,6 +31,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 
 public class PhotoActivity extends ActionBarActivity {
@@ -221,28 +222,27 @@ public class PhotoActivity extends ActionBarActivity {
 	    		// fetch list_kdo object
 	    		SharedPreferences sharedPref = getSharedPreferences("json_data", 0);
 	    		String temp_sp = sharedPref.getString("liste_kdo", null);
-	    		JSONObject temp;
+	    		JSONArray temp;
 	    		if(temp_sp!=null){
 	    			try {
-						temp = new JSONObject(temp_sp);
-						JSONArray list_kdo_array = temp.getJSONArray("liste");
+						temp = new JSONArray(temp_sp);
+						//JSONArray list_kdo_array = temp.getJSONArray("liste");
 						JSONObject new_kdo=new JSONObject();
 						EditText editText1 = (EditText) findViewById(R.id.editText1);
-						new_kdo.put("nom", editText1.getText());
+						new_kdo.put("Nom", editText1.getText());
 						EditText editText2 = (EditText) findViewById(R.id.EditText01);
-						new_kdo.put("prix", editText2.getText());
+						new_kdo.put("Prix", editText2.getText());
 						EditText editText3 = (EditText) findViewById(R.id.EditText02);
-						new_kdo.put("lieu", editText3.getText());
-						new_kdo.put("image", mCurrentPhotoPath2);
-						list_kdo_array.put(new_kdo);
-						JSONObject tempp = new JSONObject();
-						tempp.put("liste", list_kdo_array);
+						new_kdo.put("LienLieuAchat", editText3.getText());
+						new_kdo.put("Image", mCurrentPhotoPath2);
+						temp.put(new_kdo);
+						
 
 						// mets l'object json dans les sharedpref en format String
 						SharedPreferences json_infos_users = getSharedPreferences(
 								"json_data", 0);
 						SharedPreferences.Editor editor = json_infos_users.edit();
-						editor.putString("liste_kdo", tempp.toString());
+						editor.putString("liste_kdo", temp.toString());
 						editor.commit();
 						finish();
 					} catch (JSONException e) {
